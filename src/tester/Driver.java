@@ -1,3 +1,5 @@
+package tester;
+
 import model.Customer;
 
 public class Driver {
