@@ -9,7 +9,7 @@ public class Customer {
 
 
     public Customer(String firstName,String lastName, String email){
-        String Email_regex="^[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}$";
+        String Email_regex="^(.+)@(.+)[.](.+)$";
         Pattern pattern =Pattern.compile(Email_regex);
         if(email==null||email.trim().isEmpty()){
             throw new IllegalArgumentException("Email cannot be empty.\nPlease provide valid Email address, for ex- johndoe@gmail.com");
@@ -35,6 +35,6 @@ public class Customer {
     }
 
     public String toString(){
-        return "First Name: "+firstName+"Last Name: "+lastName+"Email: "+email;
+        return "Name: "+firstName+" "+lastName+"\nEmail: "+email;
     }
 }

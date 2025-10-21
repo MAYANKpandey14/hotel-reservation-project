@@ -1,14 +1,14 @@
 package ui;
 
 import api.AdminResource;
-import model.IROOM;
+import model.*;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Scanner;
 
-/**
- * Manages the administrative menu loop and operations.
- * Consolidates admin interface logic.
- */
+
 public final class AdminMenu {
 
     private final AdminResource adminResource;
@@ -19,9 +19,6 @@ public final class AdminMenu {
         this.scanner = scanner;
     }
 
-    /**
-     * Starts the administrator menu and handles the loop.
-     */
     public void start() {
         String choice;
         boolean active = true;
@@ -33,7 +30,7 @@ public final class AdminMenu {
                 active = processChoice(choice);
             }
         } catch (Exception ex) {
-            System.out.println("\nAdmin Menu Error: Bad input or unexpected issue. Returning to Main Menu.");
+            System.out.println("\nAdmin Menu Error:" + ex.getMessage());
         }
     }
 
@@ -53,28 +50,138 @@ public final class AdminMenu {
     private boolean processChoice(String choice) {
         switch (choice) {
             case "1":
-                System.out.println("View All Customers selected.");
-                adminResource.getAllCustomers();
+                displayAllCustomers();
                 return true;
             case "2":
-                // Logic for viewing all room records
-                System.out.println("View All Rooms selected.");
-                adminResource.getAllRooms();
+                displayAllRooms();
                 return true;
             case "3":
-
-                System.out.println("View All Bookings selected.");
                 adminResource.displayAllReservations();
                 return true;
             case "4":
-
-                System.out.println("Create New Room selected.");
+                addNewRoom();
                 return true;
             case "5":
                 return false;
             default:
                 System.out.println("Invalid selection. Please enter a number between 1 and 5.");
                 return true;
+        }
+    }
+
+    private void addNewRoom() {
+        List<IROOM> newRooms = new ArrayList<>();
+        boolean addAnother = true;
+        while (addAnother) {
+            try {
+                String roomNo = getRoomNumber();
+                double price = getRoomPrice();
+                RoomType roomType = getRoomType();
+                IROOM newRoom;
+                if (price == 0.0) {
+                    newRoom = new FreeRoom(roomNo, roomType);
+                } else {
+                    newRoom = new Room(roomNo, price, roomType);
+                }
+
+                newRooms.add(newRoom);
+                System.out.println("New Room added successfully: " + newRoom);
+            } catch (IllegalArgumentException ex) {
+                System.out.println(ex.getLocalizedMessage());
+            }
+            addAnother = ifAddAnotherRoom();
+        }
+
+        if (!newRooms.isEmpty()) {
+            try {
+                adminResource.addRoom(newRooms);
+                System.out.println("\nSuccessfully added " + newRooms.size() + " new room(s).");
+            } catch (IllegalArgumentException ex) {
+                System.out.println("\nError saving rooms: " + ex.getMessage());
+            }
+        }
+    }
+
+    private RoomType getRoomType() {
+        while (true) {
+            System.out.println("Enter Room type 's' for SINGLE and 'd' for DOUBLE: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+            switch (input) {
+                case "s":
+                    return RoomType.SINGLE;
+                case "d":
+                    return RoomType.DOUBLE;
+                default:
+                    System.out.println("Invalid Selection: Please enter 's' or 'd' ");
+            }
+        }
+    }
+
+    private double getRoomPrice() {
+        while (true) {
+            System.out.println("Enter Room price in $");
+            try {
+                double price = Double.parseDouble(scanner.nextLine().trim());
+                if (price < 0) {
+                    System.out.println("Room's price cannot be less than 0");
+                } else {
+                    return price;
+                }
+            } catch (NumberFormatException ex) {
+                System.out.println("Please enter a valid number: " + ex.getMessage());
+            }
+        }
+    }
+
+    private String getRoomNumber() {
+        while (true) {
+            System.out.println("Enter Room number: ");
+            String roomNo = scanner.nextLine().trim();
+            if (roomNo.isEmpty()) {
+                System.out.println("Please enter a number, Room number cannot be empty");
+            } else {
+                return roomNo;
+            }
+        }
+    }
+
+    private boolean ifAddAnotherRoom() {
+        while (true) {
+            System.out.println("Would like to add another room ? Y or N: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+            if (input.equals("y")) {
+                return true;
+            } else if (input.equals("n")) {
+                return false;
+            } else {
+                System.out.println("Invalid Input. Please enter either Y or N");
+            }
+        }
+    }
+
+    private void displayAllRooms() {
+        Collection<IROOM> rooms = adminResource.getAllRooms();
+        if (rooms.isEmpty()) {
+            System.out.println("\n There are no rooms available");
+        } else {
+            System.out.println("\n----All Rooms----");
+            for (IROOM room : rooms) {
+                System.out.println(room);
+            }
+        }
+    }
+
+
+    private void displayAllCustomers() {
+        Collection<Customer> customers = adminResource.getAllCustomers();
+        if (customers.isEmpty()) {
+            System.out.println("\n There are no registered Customers");
+        } else {
+            System.out.println("\n----All Customers----");
+            for (Customer customer : customers) {
+                System.out.println(customer);
+            }
+            System.out.println("-----------------------");
         }
     }
 }

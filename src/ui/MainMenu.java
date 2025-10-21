@@ -22,7 +22,7 @@ public class MainMenu {
 
     public MainMenu(HotelResource hotelResource, Scanner scanner, Date today, DateFormat dateFormat) {
         this.hotelResource = hotelResource;
-        this.scanner = new Scanner(System.in);
+        this.scanner = scanner;
         this.today = today;
         this.dateFormat = dateFormat;
     }
@@ -36,23 +36,23 @@ public class MainMenu {
                 switch (input) {
                     case 1:
                         makeAReservation();
-                        return true;
+                        break;
                     case 2:
                         showCustomerReservations();
-                        return true;
+                        break;
                     case 3:
                         createAccount();
-                        return true;
+                        break;
                     case 4:
-                        AdminMenu adminMenu= new AdminMenu(adminResource,scanner);
+                        AdminMenu adminMenu = new AdminMenu(adminResource, scanner);
                         adminMenu.start();
-                        return true;
+                        break;
                     case 5:
                         System.out.println("Exiting application. Goodbye!");
                         return true;
                     default:
                         System.out.println("Invalid selection. Please enter a number between 1 and 5.");
-                        return true;
+                        break;
                 }
             }
         } catch (NumberFormatException ex) {
@@ -67,7 +67,7 @@ public class MainMenu {
     }
 
     private void createAccount() {
-        System.out.print("Enter Email (name@domain.com): ");
+        System.out.print("Enter your Email Address: ");
         String email = getEmail();
 
         // Check that customer with this email does not already exist
@@ -107,6 +107,7 @@ public class MainMenu {
         }
         return name;
     }
+
     private boolean notEmpty(String input) {
         return input.matches(".*[a-zA-Z]+.*");
     }
@@ -130,7 +131,7 @@ public class MainMenu {
         String email = "";
         while (read) {
             String input = scanner.nextLine();
-            if (checkEmaiL(input)) {
+            if (checkEmail(input)) {
                 System.out.println("Please enter valid email only, for ex- Johndoe@gmail.com");
             }
             email = input;
@@ -141,7 +142,7 @@ public class MainMenu {
         }
         Collection<Reservation> customerReservations = hotelResource.getCustomerReservations(email);
 
-        if (customerReservations.size() < 0) {
+        if (customerReservations.isEmpty()) {
             System.out.println("You have currently have no reservations with us.");
         } else {
             System.out.println("You have " + customerReservations.size() + " reservations");
@@ -151,10 +152,10 @@ public class MainMenu {
         }
     }
 
-    public boolean checkEmaiL(String email) {
-        String Email_regex = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}$";
+    public boolean checkEmail(String email) {
+        String Email_regex = "^(.+)@(.+)[.](.+)$";
         Pattern pattern = Pattern.compile(Email_regex);
-        return !pattern.matcher(Email_regex).matches(); //returns true or false;
+        return !pattern.matcher(email).matches(); //returns true or false;
     }
 
 
@@ -315,7 +316,8 @@ public class MainMenu {
         while (keepReadingEmail) {
             String input = scanner.nextLine();
             // Validate email format
-            if (checkEmaiL(input)) {
+            if (checkEmail(input)) {
+                System.out.println(input);
                 System.out.println("It is not a valid email format. Please enter like example@mail.com");
                 continue;
             }
