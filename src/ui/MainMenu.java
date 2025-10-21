@@ -172,7 +172,9 @@ public class MainMenu {
                 System.out.println("Make sure check out date is later than check in date. Please re-enter dates.");
                 continue;
             }
-            Collection<IROOM> roomsAvailable = AvailableRooms(checkInDate, checkOutDate);
+            RoomSearchResult searchResult = AvailableRooms(checkInDate, checkOutDate);
+            Collection<IROOM>  roomsAvailable=searchResult.rooms;
+
             if (roomsAvailable.isEmpty()) {
                 check = false;
                 continue;
@@ -206,7 +208,7 @@ public class MainMenu {
 
             try {
                 IROOM room = hotelResource.getRoom(roomNo);
-                Reservation newReservation = hotelResource.bookARoom(email, room, checkInDate, checkOutDate);
+                Reservation newReservation = hotelResource.bookARoom(email, room, searchResult.checkInDate, searchResult.checkOutDate);
                 System.out.println("\n Room booked successfully!");
                 System.out.println(newReservation);
             } catch (IllegalArgumentException ex) {
@@ -241,7 +243,7 @@ public class MainMenu {
     }
 
 
-    private Collection<IROOM> AvailableRooms(Date checkIn, Date checkOut) {
+    private RoomSearchResult AvailableRooms(Date checkIn, Date checkOut) {
         Collection<IROOM> availableRooms = hotelResource.findARoom(checkIn, checkOut);
 
         if (availableRooms.isEmpty()) {
@@ -256,13 +258,15 @@ public class MainMenu {
 
             if (availableRooms.isEmpty()) {
                 System.out.println("No free rooms found, even after checking the next 7 days. Try different dates.");
+                return new RoomSearchResult(availableRooms,shiftedCheckIn,shiftedCheckOut);
             } else {
                 // Print shifted dates and available rooms
                 System.out.println("You can book following rooms from " + dateFormat.format(shiftedCheckIn) +
                         " till " + dateFormat.format(shiftedCheckOut) + ":");
+                return new RoomSearchResult(availableRooms,shiftedCheckIn,shiftedCheckOut);
             }
         }
-        return availableRooms;
+        return new RoomSearchResult(availableRooms,checkIn,checkOut);
     }
 
     private boolean HasNoAccount() {
@@ -360,6 +364,17 @@ public class MainMenu {
             }
         }
         return stopBooking;
+    }
+
+    private static class RoomSearchResult{
+        final Collection<IROOM> rooms;
+        final Date checkInDate;
+        final Date checkOutDate;
+        public RoomSearchResult(Collection<IROOM> rooms,Date checkInDate,Date checkOutDate){
+            this.rooms=rooms;
+            this.checkInDate=checkInDate;
+            this.checkOutDate=checkOutDate;
+        }
     }
 
 }
